@@ -70,3 +70,63 @@ def test_read_users_with_user(client, user):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'users': [user_schema]}
+
+
+def test_update_user(client, user):
+    response = client.put(
+        f'/users/{user.id}',
+        json={
+            'username': 'ana',
+            'email': 'ana@test.com',
+            'password': 'password123',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': user.id,
+        'username': 'ana',
+        'email': 'ana@test.com',
+    }
+
+
+def test_update_user_with_invalid_id(client, user):
+    response = client.put(
+        f'/users/{user.id + 1}',
+        json={
+            'username': user.username,
+            'email': user.email,
+            'password': '12345',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Usuário não consta no MADR'}
+
+
+def test_update_user_with_username_already_used(client, user, other_user):
+    response = client.put(
+        f'/users/{user.id}',
+        json={
+            'username': other_user.username,
+            'email': user.email,
+            'password': '12345',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Username já consta no MADR'}
+
+
+def test_update_user_with_email_already_used(client, user, other_user):
+    response = client.put(
+        f'/users/{user.id}',
+        json={
+            'username': user.username,
+            'email': other_user.email,
+            'password': '12345',
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Email já consta no MADR'}
