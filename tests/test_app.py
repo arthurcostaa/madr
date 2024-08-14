@@ -90,7 +90,7 @@ def test_update_user(client, user):
     }
 
 
-def test_update_user_with_invalid_id(client, user):
+def test_update_user_with_wrong_id(client, user):
     response = client.put(
         f'/users/{user.id + 1}',
         json={
@@ -130,3 +130,17 @@ def test_update_user_with_email_already_used(client, user, other_user):
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Email já consta no MADR'}
+
+
+def test_delete_user(client, user):
+    response = client.delete(f'/users/{user.id}')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'Conta deletada com sucesso'}
+
+
+def test_delete_user_with_wrong_user(client, user):
+    response = client.delete(f'/users/{user.id + 1}')
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Usuário não consta no MADR'}

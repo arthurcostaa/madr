@@ -96,3 +96,21 @@ def update_user(
     session.refresh(user_db)
 
     return user_db
+
+
+@app.delete(
+    '/users/{user_id}', status_code=HTTPStatus.OK, response_model=Message
+)
+def delete_user(user_id: int, session: Session = Depends(get_session)):
+    user_db = session.scalar(select(User).where(User.id == user_id))
+
+    if not user_db:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Usuário não consta no MADR',
+        )
+
+    session.delete(user_db)
+    session.commit()
+
+    return {'message': 'Conta deletada com sucesso'}
