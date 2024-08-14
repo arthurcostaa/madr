@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from madr.schemas import UserPublic
+
 
 def test_root_should_return_ok_and_hello_world(client):
     response = client.get('/')
@@ -52,3 +54,19 @@ def test_create_user_with_username_already_used(client, user):
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {'detail': 'Username já consta no MADR'}
+
+
+def test_read_users(client):
+    response = client.get('/users/')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': []}
+
+
+def test_read_users_with_user(client, user):
+    user_schema = UserPublic.model_validate(user).model_dump()
+
+    response = client.get('/users/')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'users': [user_schema]}

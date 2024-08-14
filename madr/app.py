@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import User
-from madr.schemas import Message, UserPublic, UserSchema
+from madr.schemas import Message, UserList, UserPublic, UserSchema
 from madr.security import get_password_hash
 
 app = FastAPI()
@@ -48,3 +48,11 @@ def create_user(user: UserSchema, session: Session = Depends(get_session)):
     session.refresh(db_user)
 
     return db_user
+
+
+@app.get('/users/', status_code=HTTPStatus.OK, response_model=UserList)
+def read_users(
+    skip: int = 0, limit: int = 50, session: Session = Depends(get_session)
+):
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+    return {'users': users}
