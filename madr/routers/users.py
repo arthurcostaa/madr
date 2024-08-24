@@ -8,11 +8,12 @@ from sqlalchemy.orm import Session
 from madr.database import get_session
 from madr.models import User
 from madr.schemas import Message, UserList, UserPublic, UserSchema
-from madr.security import get_password_hash
+from madr.security import get_current_user, get_password_hash
 
 router = APIRouter(prefix='/users', tags=['users'])
 
 T_Session = Annotated[Session, Depends(get_session)]
+T_CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=UserPublic)
@@ -55,13 +56,15 @@ def read_users(session: T_Session, skip: int = 0, limit: int = 50):
 
 
 @router.put('/{user_id}', status_code=HTTPStatus.OK, response_model=UserPublic)
-def update_user(user_id: int, user: UserSchema, session: T_Session):
-    user_db = session.scalar(select(User).where(User.id == user_id))
-
-    if not user_db:
+def update_user(
+    user_id: int,
+    user: UserSchema,
+    session: T_Session,
+    current_user: T_CurrentUser,
+):
+    if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='Usuário não consta no MADR',
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
     if session.scalar(
@@ -80,27 +83,28 @@ def update_user(user_id: int, user: UserSchema, session: T_Session):
             detail='Email já consta no MADR',
         )
 
-    user_db.username = user.username
-    user_db.email = user.email
-    user_db.password = get_password_hash(user.password)
+    current_user.username = user.username
+    current_user.email = user.email
+    current_user.password = get_password_hash(user.password)
 
     session.commit()
-    session.refresh(user_db)
+    session.refresh(current_user)
 
-    return user_db
+    return current_user
 
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
-def delete_user(user_id: int, session: T_Session):
-    user_db = session.scalar(select(User).where(User.id == user_id))
-
-    if not user_db:
+def delete_user(
+    user_id: int,
+    session: T_Session,
+    current_user: T_CurrentUser,
+):
+    if current_user.id != user_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='Usuário não consta no MADR',
+            status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    session.delete(user_db)
+    session.delete(current_user)
     session.commit()
 
     return {'message': 'Conta deletada com sucesso'}

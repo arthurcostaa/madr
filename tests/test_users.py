@@ -65,9 +65,10 @@ def test_read_users_with_user(client, user):
     assert response.json() == {'users': [user_schema]}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'ana',
             'email': 'ana@test.com',
@@ -83,23 +84,27 @@ def test_update_user(client, user):
     }
 
 
-def test_update_user_with_wrong_id(client, user):
+def test_update_user_with_wrong_user(client, other_user, token):
     response = client.put(
-        f'/users/{user.id + 1}',
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
-            'username': user.username,
-            'email': user.email,
+            'username': other_user.username,
+            'email': other_user.email,
             'password': '12345',
         },
     )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'Usuário não consta no MADR'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
 
 
-def test_update_user_with_username_already_used(client, user, other_user):
+def test_update_user_with_username_already_used(
+    client, user, other_user, token
+):
     response = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': other_user.username,
             'email': user.email,
@@ -111,9 +116,10 @@ def test_update_user_with_username_already_used(client, user, other_user):
     assert response.json() == {'detail': 'Username já consta no MADR'}
 
 
-def test_update_user_with_email_already_used(client, user, other_user):
+def test_update_user_with_email_already_used(client, user, other_user, token):
     response = client.put(
         f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': user.username,
             'email': other_user.email,
@@ -125,15 +131,20 @@ def test_update_user_with_email_already_used(client, user, other_user):
     assert response.json() == {'detail': 'Email já consta no MADR'}
 
 
-def test_delete_user(client, user):
-    response = client.delete(f'/users/{user.id}')
+def test_delete_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}', headers={'Authorization': f'Bearer {token}'}
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'Conta deletada com sucesso'}
 
 
-def test_delete_user_with_wrong_user(client, user):
-    response = client.delete(f'/users/{user.id + 1}')
+def test_delete_user_with_wrong_user(client, other_user, token):
+    response = client.delete(
+        f'/users/{other_user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'Usuário não consta no MADR'}
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
