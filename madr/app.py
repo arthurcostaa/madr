@@ -2,11 +2,12 @@ from http import HTTPStatus
 
 from fastapi import FastAPI
 
-from madr.routers import users
+from madr.routers import auth, users
 from madr.schemas import Message
 
 app = FastAPI()
 
+app.include_router(auth.router)
 app.include_router(users.router)
 
 

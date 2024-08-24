@@ -82,7 +82,7 @@ def update_user(user_id: int, user: UserSchema, session: T_Session):
 
     user_db.username = user.username
     user_db.email = user.email
-    user_db.password = user.password
+    user_db.password = get_password_hash(user.password)
 
     session.commit()
     session.refresh(user_db)
@@ -90,9 +90,7 @@ def update_user(user_id: int, user: UserSchema, session: T_Session):
     return user_db
 
 
-@router.delete(
-    '/{user_id}', status_code=HTTPStatus.OK, response_model=Message
-)
+@router.delete('/{user_id}', status_code=HTTPStatus.OK, response_model=Message)
 def delete_user(user_id: int, session: T_Session):
     user_db = session.scalar(select(User).where(User.id == user_id))
 

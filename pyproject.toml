@@ -12,7 +12,9 @@ sqlalchemy = "^2.0.31"
 pydantic-settings = "^2.4.0"
 psycopg = {extras = ["binary"], version = "^3.2.1"}
 alembic = "^1.13.2"
-pwdlib = {extras = ["argon2"], version = "^0.2.0"}
+pwdlib = {extras = ["argon2"], version = "^0.2.1"}
+pyjwt = "^2.9.0"
+python-multipart = "^0.0.9"
 
 
 [tool.poetry.group.dev.dependencies]
