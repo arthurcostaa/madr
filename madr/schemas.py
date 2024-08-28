@@ -29,3 +29,11 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class NovelistSchema(BaseModel):
+    name: str
+
+
+class NovelistPublic(NovelistSchema):
+    id: int
