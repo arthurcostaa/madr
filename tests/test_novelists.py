@@ -76,3 +76,23 @@ def test_update_novelist_with_name_already_used(
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Novelist already exists in MADR'}
+
+
+def test_read_novelist(client, novelist, token):
+    response = client.get(
+        f'/novelists/{novelist.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'id': novelist.id, 'name': novelist.name}
+
+
+def test_read_unexistent_novelist(client, token):
+    response = client.get(
+        '/novelists/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Novelist not found in MADR'}

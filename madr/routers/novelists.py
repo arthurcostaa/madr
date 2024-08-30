@@ -94,3 +94,20 @@ def update_novelist(
         )
 
     return novelist_db
+
+
+@router.get(
+    '/{novelist_id}', status_code=HTTPStatus.OK, response_model=NovelistPublic
+)
+def read_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
+    novelist = session.scalar(
+        select(Novelist).where(Novelist.id == novelist_id)
+    )
+
+    if not novelist:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Novelist not found in MADR',
+        )
+
+    return novelist
