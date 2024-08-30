@@ -41,3 +41,38 @@ def test_delete_unexistent_novelist(client, novelist, token):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Novelist not found in MADR'}
+
+
+def test_update_novelist(client, novelist, token):
+    response = client.patch(
+        f'/novelists/{novelist.id}',
+        json={'name': 'Arthur Conan Doyle'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'id': novelist.id, 'name': 'arthur conan doyle'}
+
+
+def test_update_unexistent_novelist(client, novelist, token):
+    response = client.patch(
+        f'/novelists/{novelist.id + 1}',
+        json={'name': 'Arthur Conan Doyle'},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Novelist not found in MADR'}
+
+
+def test_update_novelist_with_name_already_used(
+    client, novelist, other_novelist, token
+):
+    response = client.patch(
+        f'/novelists/{novelist.id}',
+        json={'name': other_novelist.name},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Novelist already exists in MADR'}

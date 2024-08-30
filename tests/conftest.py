@@ -104,3 +104,14 @@ def novelist(session):
     session.refresh(novelist)
 
     return novelist
+
+
+@pytest.fixture
+def other_novelist(session):
+    novelist = NovelistFactory()
+
+    session.add(novelist)
+    session.commit()
+    session.refresh(novelist)
+
+    return novelist
