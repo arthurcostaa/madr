@@ -32,7 +32,7 @@ def test_create_user_with_email_already_used(client, user):
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'Email já consta no MADR'}
+    assert response.json() == {'detail': 'Email already exists in MADR'}
 
 
 def test_create_user_with_username_already_used(client, user):
@@ -46,7 +46,7 @@ def test_create_user_with_username_already_used(client, user):
     )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {'detail': 'Username já consta no MADR'}
+    assert response.json() == {'detail': 'Username already exists in MADR'}
 
 
 def test_read_users(client):
@@ -113,7 +113,7 @@ def test_update_user_with_username_already_used(
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Username já consta no MADR'}
+    assert response.json() == {'detail': 'Username already exists in MADR'}
 
 
 def test_update_user_with_email_already_used(client, user, other_user, token):
@@ -128,7 +128,7 @@ def test_update_user_with_email_already_used(client, user, other_user, token):
     )
 
     assert response.status_code == HTTPStatus.CONFLICT
-    assert response.json() == {'detail': 'Email já consta no MADR'}
+    assert response.json() == {'detail': 'Email already exists in MADR'}
 
 
 def test_delete_user(client, user, token):
@@ -137,7 +137,7 @@ def test_delete_user(client, user, token):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'Conta deletada com sucesso'}
+    assert response.json() == {'message': 'Account deleted successfully'}
 
 
 def test_delete_user_with_wrong_user(client, other_user, token):

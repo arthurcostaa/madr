@@ -28,12 +28,12 @@ def create_user(user: UserSchema, session: T_Session):
         if user_db.username == user.username:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail='Username já consta no MADR',
+                detail='Username already exists in MADR',
             )
         if user_db.email == user.email:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
-                detail='Email já consta no MADR',
+                detail='Email already exists in MADR',
             )
 
     db_user = User(
@@ -72,7 +72,7 @@ def update_user(
     ):
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
-            detail='Username já consta no MADR',
+            detail='Username already exists in MADR',
         )
 
     if session.scalar(
@@ -80,7 +80,7 @@ def update_user(
     ):
         raise HTTPException(
             status_code=HTTPStatus.CONFLICT,
-            detail='Email já consta no MADR',
+            detail='Email already exists in MADR',
         )
 
     current_user.username = user.username
@@ -107,4 +107,4 @@ def delete_user(
     session.delete(current_user)
     session.commit()
 
-    return {'message': 'Conta deletada com sucesso'}
+    return {'message': 'Account deleted successfully'}

@@ -11,9 +11,9 @@ class User:
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    email: Mapped[str] = mapped_column(unique=True)
-    username: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
@@ -27,7 +27,7 @@ class Novelist:
     __tablename__ = 'novelists'
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )

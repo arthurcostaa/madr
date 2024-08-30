@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class Message(BaseModel):
@@ -6,9 +6,9 @@ class Message(BaseModel):
 
 
 class UserSchema(BaseModel):
-    username: str
+    username: str = Field(min_length=3, max_length=256)
     email: EmailStr
-    password: str
+    password: str = Field(min_length=5, max_length=256)
 
 
 class UserPublic(BaseModel):
@@ -32,7 +32,7 @@ class TokenData(BaseModel):
 
 
 class NovelistSchema(BaseModel):
-    name: str
+    name: str = Field(min_length=3, max_length=256)
 
 
 class NovelistPublic(NovelistSchema):
