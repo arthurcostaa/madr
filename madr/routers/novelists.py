@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import Novelist, User
-from madr.schemas import Message, NovelistPublic, NovelistSchema
+from madr.schemas import Message, NovelistList, NovelistPublic, NovelistSchema
 from madr.security import get_current_user
 from madr.utils import sanitize
 
@@ -111,3 +111,35 @@ def read_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
         )
 
     return novelist
+
+
+@router.get('/', status_code=HTTPStatus.OK, response_model=NovelistList)
+def read_novelists(
+    session: T_Session,
+    user: T_CurrentUser,
+    name: Optional[str] = '',
+    offset: Optional[int] = 0,
+    limit: Optional[int] = 10,
+):
+    if offset < 0:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Offset must be a non-negative integer',
+        )
+
+    if limit < 0:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail='Limit must be a non-negative integer',
+        )
+
+    if not name:
+        query = select(Novelist)
+    else:
+        query = select(Novelist).filter(
+            Novelist.name.ilike(f'%{sanitize(name)}%')
+        )
+
+    novelists = session.scalars(query.offset(offset).limit(limit)).all()
+
+    return {'novelists': novelists}

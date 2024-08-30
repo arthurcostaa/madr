@@ -37,3 +37,7 @@ class NovelistSchema(BaseModel):
 
 class NovelistPublic(NovelistSchema):
     id: int
+
+
+class NovelistList(BaseModel):
+    novelists: list[NovelistPublic]
