@@ -41,3 +41,13 @@ class NovelistPublic(NovelistSchema):
 
 class NovelistList(BaseModel):
     novelists: list[NovelistPublic]
+
+
+class BookSchema(BaseModel):
+    year: int
+    title: str = Field(min_length=3, max_length=256)
+    novelist_id: int
+
+
+class BookPublic(BookSchema):
+    id: int

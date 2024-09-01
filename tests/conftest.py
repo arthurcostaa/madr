@@ -7,7 +7,7 @@ from testcontainers.postgres import PostgresContainer
 
 from madr.app import app
 from madr.database import get_session
-from madr.models import Novelist, User, table_registry
+from madr.models import Book, Novelist, User, table_registry
 from madr.security import get_password_hash
 
 
@@ -115,3 +115,14 @@ def other_novelist(session):
     session.refresh(novelist)
 
     return novelist
+
+
+@pytest.fixture
+def book(session, novelist):
+    new_book = Book(year=2024, title='book1')
+    new_book.novelist = novelist
+
+    session.add(new_book)
+    session.commit()
+
+    return new_book

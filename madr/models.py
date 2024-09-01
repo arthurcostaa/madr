@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_column, registry
+from sqlalchemy import ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, registry, relationship
 
 table_registry = registry()
 
@@ -28,6 +28,30 @@ class Novelist:
 
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    books: Mapped[list['Book']] = relationship(
+        init=False, back_populates='novelist', cascade='all, delete-orphan'
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        init=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+@table_registry.mapped_as_dataclass
+class Book:
+    __tablename__ = 'books'
+
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    year: Mapped[int] = mapped_column(nullable=False)
+    title: Mapped[str] = mapped_column(unique=True, nullable=False)
+    novelist_id: Mapped[int] = mapped_column(
+        ForeignKey('novelists.id'), init=False
+    )
+    novelist: Mapped[Novelist] = relationship(
+        init=False, back_populates='books'
+    )
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )

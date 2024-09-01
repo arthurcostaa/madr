@@ -3,8 +3,10 @@ services:
     image: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_DB: app_db
+      POSTGRES_PASSWORD: app_password
     ports:
       - "5432:5432"
 
@@ -12,8 +14,11 @@ services:
     image: madr
     entrypoint: ./entrypoint.sh
     build: .
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://app_user:app_password@madr_database:5432/app_db
+      SECRET_KEY: "secure secret key"
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
     ports:
       - "8000:8000"
     depends_on:
