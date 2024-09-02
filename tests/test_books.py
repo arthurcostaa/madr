@@ -135,3 +135,28 @@ def test_patch_book_with_name_already_used(
 
     assert response.status_code == HTTPStatus.CONFLICT
     assert response.json() == {'detail': 'Book already exists in MADR'}
+
+
+def test_read_book(client, token, book):
+    response = client.get(
+        f'/books/{book.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'id': book.id,
+        'novelist_id': book.novelist_id,
+        'title': book.title,
+        'year': book.year,
+    }
+
+
+def test_read_unexistent_book(client, token):
+    response = client.get(
+        '/books/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Book not found in MADR'}

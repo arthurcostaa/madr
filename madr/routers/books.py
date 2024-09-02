@@ -93,3 +93,16 @@ def update_book(
         )
 
     return book_db
+
+
+@router.get('/{book_id}', status_code=HTTPStatus.OK, response_model=BookPublic)
+def read_book(book_id: int, session: T_Session, user: T_CurrentUser):
+    book = session.scalar(select(Book).where(Book.id == book_id))
+
+    if not book:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Book not found in MADR',
+        )
+
+    return book
