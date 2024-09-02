@@ -126,3 +126,14 @@ def book(session, novelist):
     session.commit()
 
     return new_book
+
+
+@pytest.fixture
+def other_book(session, novelist):
+    new_book = Book(year=2024, title='book2')
+    new_book.novelist = novelist
+
+    session.add(new_book)
+    session.commit()
+
+    return new_book

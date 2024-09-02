@@ -84,3 +84,54 @@ def test_delete_unexistent_book(client, token):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Book not found in MADR'}
+
+
+def test_patch_book(client, token, book, other_novelist):
+    response = client.patch(
+        f'/books/{book.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'year': 2024,
+            'title': 'New book',
+            'novelist_id': other_novelist.id,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'year': 2024,
+        'title': 'new book',
+        'novelist_id': other_novelist.id,
+    }
+
+
+def test_patch_unexistent_book(client, token, novelist):
+    response = client.patch(
+        '/books/1',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'year': 2024,
+            'title': 'New book',
+            'novelist_id': novelist.id,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Book not found in MADR'}
+
+
+def test_patch_book_with_name_already_used(
+    client, token, book, other_book, novelist
+):
+    response = client.patch(
+        f'/books/{other_book.id}',
+        headers={'Authorization': f'Bearer {token}'},
+        json={
+            'year': 2024,
+            'title': book.title,
+            'novelist_id': novelist.id,
+        },
+    )
+
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response.json() == {'detail': 'Book already exists in MADR'}
