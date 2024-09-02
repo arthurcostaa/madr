@@ -64,3 +64,23 @@ def test_create_book_with_unexistent_novelist_id(client, token):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Novelist ID not found'}
+
+
+def test_delete_book(client, token, book):
+    response = client.delete(
+        f'/books/{book.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {'message': 'Book deleted from MADR'}
+
+
+def test_delete_unexistent_book(client, token):
+    response = client.delete(
+        '/books/1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json() == {'detail': 'Book not found in MADR'}

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from madr.database import get_session
 from madr.models import Book, Novelist, User
-from madr.schemas import BookPublic, BookSchema
+from madr.schemas import BookPublic, BookSchema, Message
 from madr.security import get_current_user
 from madr.utils import sanitize
 
@@ -45,3 +45,19 @@ def create_book(book: BookSchema, session: T_Session, user: T_CurrentUser):
         )
 
     return new_book
+
+
+@router.delete('/{book_id}', status_code=HTTPStatus.OK, response_model=Message)
+def delete_book(book_id: int, session: T_Session, user: T_CurrentUser):
+    book = session.scalar(select(Book).where(Book.id == book_id))
+
+    if not book:
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail='Book not found in MADR',
+        )
+
+    session.delete(book)
+    session.commit()
+
+    return {'message': 'Book deleted from MADR'}
