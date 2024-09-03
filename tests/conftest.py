@@ -27,6 +27,15 @@ class NovelistFactory(factory.Factory):
     name = factory.Sequence(lambda n: f'novelist{n}')
 
 
+class BookFactory(factory.Factory):
+    class Meta:
+        model = Book
+
+    year = factory.Faker('year')
+    title = factory.Sequence(lambda n: f'title{n}')
+    novelist_id = factory.SubFactory(NovelistFactory)
+
+
 @pytest.fixture
 def client(session):
     def get_session_override():
@@ -119,21 +128,21 @@ def other_novelist(session):
 
 @pytest.fixture
 def book(session, novelist):
-    new_book = Book(year=2024, title='book1')
-    new_book.novelist = novelist
+    new_book = BookFactory(novelist_id=novelist.id)
 
     session.add(new_book)
     session.commit()
+    session.refresh(new_book)
 
     return new_book
 
 
 @pytest.fixture
 def other_book(session, novelist):
-    new_book = Book(year=2024, title='book2')
-    new_book.novelist = novelist
+    new_book = BookFactory(novelist_id=novelist.id)
 
     session.add(new_book)
     session.commit()
+    session.refresh(new_book)
 
     return new_book

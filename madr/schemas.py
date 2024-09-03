@@ -57,3 +57,7 @@ class BookUpdate(BaseModel):
     year: int | None = None
     title: str | None = Field(min_length=3, max_length=256)
     novelist_id: int | None = None
+
+
+class BookList(BaseModel):
+    books: list[BookPublic]

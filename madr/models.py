@@ -46,9 +46,7 @@ class Book:
     id: Mapped[int] = mapped_column(init=False, primary_key=True)
     year: Mapped[int] = mapped_column(nullable=False)
     title: Mapped[str] = mapped_column(unique=True, nullable=False)
-    novelist_id: Mapped[int] = mapped_column(
-        ForeignKey('novelists.id'), init=False
-    )
+    novelist_id: Mapped[int] = mapped_column(ForeignKey('novelists.id'))
     novelist: Mapped[Novelist] = relationship(
         init=False, back_populates='books'
     )

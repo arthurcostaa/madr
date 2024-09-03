@@ -1,5 +1,7 @@
 from http import HTTPStatus
 
+from tests.conftest import BookFactory
+
 
 def test_create_book(client, novelist, token):
     response = client.post(
@@ -160,3 +162,107 @@ def test_read_unexistent_book(client, token):
 
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Book not found in MADR'}
+
+
+def test_read_books_with_negative_offset(client, token):
+    response = client.get(
+        '/books/?offset=-1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {
+        'detail': 'Offset must be a non-negative integer'
+    }
+
+
+def test_read_books_with_negative_limit(client, token):
+    response = client.get(
+        '/books/?limit=-1',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {
+        'detail': 'Limit must be a non-negative integer'
+    }
+
+
+def test_read_books_should_return_5_books(session, client, token, novelist):
+    expected_books = 5
+    session.bulk_save_objects(
+        BookFactory.create_batch(5, novelist_id=novelist.id)
+    )
+    session.commit()
+
+    response = client.get(
+        '/books/',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()['books']) == expected_books
+
+
+def test_read_books_pagination_should_return_3_books(
+    session, client, token, novelist
+):
+    expected_books = 3
+    session.bulk_save_objects(
+        BookFactory.create_batch(5, novelist_id=novelist.id)
+    )
+    session.commit()
+
+    response = client.get(
+        '/books/?offset=1&limit=3',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()['books']) == expected_books
+
+
+def test_read_books_filter_year_should_return_5_books(
+    session, client, token, novelist
+):
+    expected_books = 5
+    session.bulk_save_objects(
+        BookFactory.create_batch(5, novelist_id=novelist.id, year=2024)
+    )
+    session.commit()
+
+    response = client.get(
+        '/books/?year=2024',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()['books']) == expected_books
+
+
+def test_read_books_filter_title_should_return_5_books(
+    session, client, token, novelist
+):
+    expected_books = 5
+    session.bulk_save_objects(
+        BookFactory.create_batch(5, novelist_id=novelist.id)
+    )
+    session.commit()
+
+    response = client.get(
+        '/books/?title=title',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert len(response.json()['books']) == expected_books
+
+
+def test_read_books_should_return_empty_list(client, token):
+    response = client.get(
+        '/books/',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    response.json()['books'] == {'books': []}
