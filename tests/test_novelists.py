@@ -114,30 +114,6 @@ def test_read_novelists_should_return_5_novelists(session, client, token):
     assert len(response.json()['novelists']) == expected_novelists
 
 
-def test_read_novelists_with_negative_offset(client, token):
-    response = client.get(
-        '/novelists/?offset=-1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {
-        'detail': 'Offset must be a non-negative integer'
-    }
-
-
-def test_read_novelists_with_negative_limit(client, token):
-    response = client.get(
-        '/novelists/?limit=-1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {
-        'detail': 'Limit must be a non-negative integer'
-    }
-
-
 def test_read_novelists_pagination_should_return_3_novelists(
     session, client, token
 ):

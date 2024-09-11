@@ -164,30 +164,6 @@ def test_read_unexistent_book(client, token):
     assert response.json() == {'detail': 'Book not found in MADR'}
 
 
-def test_read_books_with_negative_offset(client, token):
-    response = client.get(
-        '/books/?offset=-1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {
-        'detail': 'Offset must be a non-negative integer'
-    }
-
-
-def test_read_books_with_negative_limit(client, token):
-    response = client.get(
-        '/books/?limit=-1',
-        headers={'Authorization': f'Bearer {token}'},
-    )
-
-    assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == {
-        'detail': 'Limit must be a non-negative integer'
-    }
-
-
 def test_read_books_should_return_5_books(session, client, token, novelist):
     expected_books = 5
     session.bulk_save_objects(

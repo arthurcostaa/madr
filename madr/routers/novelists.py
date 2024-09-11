@@ -1,7 +1,7 @@
 from http import HTTPStatus
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -46,7 +46,11 @@ def create_novelist(
 @router.delete(
     '/{novelist_id}', status_code=HTTPStatus.OK, response_model=Message
 )
-def delete_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
+def delete_novelist(
+    novelist_id: Annotated[int, Path(gt=0)],
+    session: T_Session,
+    user: T_CurrentUser,
+):
     novelist_db = session.scalar(
         select(Novelist).where(Novelist.id == novelist_id)
     )
@@ -67,7 +71,7 @@ def delete_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
     '/{novelist_id}', status_code=HTTPStatus.OK, response_model=NovelistPublic
 )
 def update_novelist(
-    novelist_id: int,
+    novelist_id: Annotated[int, Path(gt=0)],
     novelist: NovelistSchema,
     session: T_Session,
     user: T_CurrentUser,
@@ -99,7 +103,11 @@ def update_novelist(
 @router.get(
     '/{novelist_id}', status_code=HTTPStatus.OK, response_model=NovelistPublic
 )
-def read_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
+def read_novelist(
+    novelist_id: Annotated[int, Path(gt=0)],
+    session: T_Session,
+    user: T_CurrentUser,
+):
     novelist = session.scalar(
         select(Novelist).where(Novelist.id == novelist_id)
     )
@@ -117,22 +125,10 @@ def read_novelist(novelist_id: int, session: T_Session, user: T_CurrentUser):
 def read_novelists(
     session: T_Session,
     user: T_CurrentUser,
-    name: Optional[str] = '',
-    offset: Optional[int] = 0,
-    limit: Optional[int] = 10,
+    name: Annotated[str | None, Query(max_length=200)] = '',
+    offset: Annotated[int | None, Query(ge=0)] = 0,
+    limit: Annotated[int | None, Query(gt=0, le=10)] = 10,
 ):
-    if offset < 0:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Offset must be a non-negative integer',
-        )
-
-    if limit < 0:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Limit must be a non-negative integer',
-        )
-
     if not name:
         query = select(Novelist)
     else:

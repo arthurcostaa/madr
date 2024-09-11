@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -49,7 +49,11 @@ def create_book(book: BookSchema, session: T_Session, user: T_CurrentUser):
 
 
 @router.delete('/{book_id}', status_code=HTTPStatus.OK, response_model=Message)
-def delete_book(book_id: int, session: T_Session, user: T_CurrentUser):
+def delete_book(
+    book_id: Annotated[int, Path(gt=0)],
+    session: T_Session,
+    user: T_CurrentUser,
+):
     book = session.scalar(select(Book).where(Book.id == book_id))
 
     if not book:
@@ -68,7 +72,10 @@ def delete_book(book_id: int, session: T_Session, user: T_CurrentUser):
     '/{book_id}', status_code=HTTPStatus.OK, response_model=BookSchema
 )
 def update_book(
-    book_id: int, book: BookUpdate, session: T_Session, user: T_CurrentUser
+    book_id: Annotated[int, Path(gt=0)],
+    book: BookUpdate,
+    session: T_Session,
+    user: T_CurrentUser,
 ):
     book_db = session.scalar(select(Book).where(Book.id == book_id))
 
@@ -97,7 +104,11 @@ def update_book(
 
 
 @router.get('/{book_id}', status_code=HTTPStatus.OK, response_model=BookPublic)
-def read_book(book_id: int, session: T_Session, user: T_CurrentUser):
+def read_book(
+    book_id: Annotated[int, Path(gt=0)],
+    session: T_Session,
+    user: T_CurrentUser,
+):
     book = session.scalar(select(Book).where(Book.id == book_id))
 
     if not book:
@@ -113,23 +124,11 @@ def read_book(book_id: int, session: T_Session, user: T_CurrentUser):
 def read_books(  # noqa
     session: T_Session,
     user: T_CurrentUser,
-    year: int | None = None,
-    title: str | None = None,
-    offset: int | None = 0,
-    limit: int | None = 20,
+    year: Annotated[int | None, Query(gt=0)] = None,
+    title: Annotated[str | None, Query(min_length=3, max_length=200)] = None,
+    offset: Annotated[int | None, Query(ge=0)] = 0,
+    limit: Annotated[int | None, Query(gt=0, le=20)] = 20,
 ):
-    if offset < 0:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Offset must be a non-negative integer',
-        )
-
-    if limit < 0:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Limit must be a non-negative integer',
-        )
-
     query = select(Book)
 
     if year:
